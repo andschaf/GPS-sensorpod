@@ -140,7 +140,7 @@ void gps2rviz(const sensor_msgs::NavSatFix gps_NavSatFix){ //callback function
 
 int main(int argc, char **argv)
 {	
-
+	ROS_INFO("You are running playground!!!");
 	ros::init(argc, argv, "nGPSlistener");
 	
 	ros::NodeHandle n;

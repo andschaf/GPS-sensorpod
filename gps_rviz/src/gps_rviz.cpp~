@@ -104,7 +104,7 @@ void publishGPSpositions(const geometry_msgs::Vector3 msg){
 		int size_gps_line_list;
 		size_gps_line_list=gps_line_list.points.size();
 
-		ROS_INFO("size_gps_points= [%d]; size_gps_line_strip= [%d]; size_gps_line_list= [%d]", size_gps_points,size_gps_line_strip,size_gps_line_list);
+		ROS_INFO("size_gps_points= [%d]; size_gps_line_strip= [%d]; size_gps_line_list= [%d]", 	size_gps_points,size_gps_line_strip,size_gps_line_list);
 
 		ROS_INFO("Trying to publish...");
 		gps_pub.publish(gps_points);

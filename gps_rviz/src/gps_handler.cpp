@@ -50,11 +50,15 @@ return gps_cart;
 void publishGPS_Track(){
 
 	ros::NodeHandle n;
-	ros::Publisher gps_pub = n.advertise<visualization_msgs::MarkerArray>("GPS_marker",1000);
-	
-	// Actually Publish!
-
 	ROS_INFO("Advertising GPS_marker...");
+	ros::Publisher gps_pub = n.advertise<visualization_msgs::MarkerArray>("GPS_marker",1000);
+	ROS_INFO("DONE.");
+
+	ROS_INFO("Actually Publishing...");	
+	gps_pub.publish(GPS_TRACK);
+	ROS_INFO("DONE.");
+
+	
 
 	ros::spin();
 }

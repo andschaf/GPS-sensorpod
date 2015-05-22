@@ -52,7 +52,8 @@ void publishGPS_Track(){
 	ros::NodeHandle n;
 	ros::Publisher gps_pub = n.advertise<visualization_msgs::MarkerArray>("GPS_marker",1000);
 	
-	
+	gps_pub.publish(GPS_TRACK);
+
 
 	ROS_INFO("Advertising GPS_marker...");
 

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package>
+  <name>gps_rviz</name>
+  <version>0.0.0</version>
+  <description>The gps_rviz package. Allows to display the generated GPS coordinates to display in rviz</description>
+
+  <maintainer email="andschaf@ethz.ch">andschaf</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <run_depend>roscpp</run_depend>
+
+
+</package>

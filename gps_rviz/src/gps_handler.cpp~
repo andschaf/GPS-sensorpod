@@ -13,20 +13,13 @@ namespace gps{
 visualization_msgs::MarkerArray GPS_TRACK;
 visualization_msgs::Marker gps_points, gps_line_strip, gps_line_list;
 	
-
-
-
 geometry_msgs::Vector3 gps2cart(const geometry_msgs::Vector3& gpsOut)
 {	
-	float majorAxis;
-	float minorAxis;
 	float e; 
 	float R;
 
 
-	majorAxis 	= 6378137; //in meters
-	minorAxis 	= 6356752.31; //in meters
-	R 		= (majorAxis+minorAxis)/2; //in meters
+	R = (majorAxis+minorAxis)/2; //in meters
 	e = (majorAxis*majorAxis-minorAxis*minorAxis)/(majorAxis*majorAxis); //in meters
 
 	float height; 		//meters altitude
@@ -51,20 +44,7 @@ return gps_cart;
 }
 
 
-void publishGPS_Track(){
 
-	ros::NodeHandle n;
-	ROS_INFO("Advertising GPS_marker...");
-	ros::Publisher gps_pub = n.advertise<visualization_msgs::MarkerArray>("GPS_marker",1000); //TODO rewrite this
-	ROS_INFO("DONE.");
-
-	ROS_INFO("Actually Publishing...");	
-	gps_pub.publish(GPS_TRACK);
-	ROS_INFO("DONE.");
-
-
-	ros::spin();
-}
 
 void addToTrack(const geometry_msgs::Vector3 PointToBeAddedToTrack){
 

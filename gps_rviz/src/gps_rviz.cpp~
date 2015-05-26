@@ -20,8 +20,7 @@ void gps2rviz(const sensor_msgs::NavSatFix gps_NavSatFix){ //callback function
 
 	gps::addToTrack(cleaned_GPS_point);	
 	
-
-//gps::publishGPSpositions(cleaned_GPS_point);
+	gps::publishGPS_Track();
 } 
 
 

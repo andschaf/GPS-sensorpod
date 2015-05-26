@@ -2,6 +2,7 @@
 #include "math.h"
 #include "visualization_msgs/Marker.h"
 #include "visualization_msgs/MarkerArray.h"
+#include "gps_handler.h"
 
 #define PI 3.14159265
 
@@ -11,6 +12,9 @@ namespace gps{
 
 visualization_msgs::MarkerArray GPS_TRACK;
 visualization_msgs::Marker gps_points, gps_line_strip, gps_line_list;
+	
+
+
 
 geometry_msgs::Vector3 gps2cart(const geometry_msgs::Vector3& gpsOut)
 {	
@@ -50,12 +54,14 @@ return gps_cart;
 void publishGPS_Track(){
 
 	ros::NodeHandle n;
-	ros::Publisher gps_pub = n.advertise<visualization_msgs::MarkerArray>("GPS_marker",1000);
-	
-	gps_pub.publish(GPS_TRACK);
-
-
 	ROS_INFO("Advertising GPS_marker...");
+	ros::Publisher gps_pub = n.advertise<visualization_msgs::MarkerArray>("GPS_marker",1000); //TODO rewrite this
+	ROS_INFO("DONE.");
+
+	ROS_INFO("Actually Publishing...");	
+	gps_pub.publish(GPS_TRACK);
+	ROS_INFO("DONE.");
+
 
 	ros::spin();
 }
@@ -63,9 +69,9 @@ void publishGPS_Track(){
 void addToTrack(const geometry_msgs::Vector3 PointToBeAddedToTrack){
 
 	geometry_msgs::Point p;
-	p.x = PointToBeAddedToTrack.x;
-	p.y = PointToBeAddedToTrack.y;
-	p.z = PointToBeAddedToTrack.z;
+	p.x = PointToBeAddedToTrack.x-InitializingPoint_x;
+	p.y = PointToBeAddedToTrack.y-InitializingPoint_y;
+	p.z = PointToBeAddedToTrack.z-InitializingPoint_z;
 
 	gps_points.points.push_back(p);
 	gps_line_strip.points.push_back(p);
@@ -108,11 +114,11 @@ void initializeTrack(){
 
 	ROS_INFO("Defined type, scale and color successfully");
 
-	// Add the first point to the tracker
 	geometry_msgs::Vector3 InitializingPoint;
-	InitializingPoint.x =4266066; //TODO Define this point
-	InitializingPoint.y = 584902;
-	InitializingPoint.z =4691134; 
+	InitializingPoint.x = InitializingPoint_x;
+	InitializingPoint.y = InitializingPoint_y;
+	InitializingPoint.z = InitializingPoint_z;
+	
 	addToTrack(InitializingPoint);
 	ROS_INFO("Initialized Track successfully. First point: [%f],[%f],[%f].", InitializingPoint.x, InitializingPoint.y, InitializingPoint.z);
 

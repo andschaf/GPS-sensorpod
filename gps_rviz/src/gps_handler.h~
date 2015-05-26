@@ -1,0 +1,7 @@
+#include "geometry_msgs/Vector3.h"
+
+const float InitializingPoint_x =4266066; //TODO Define this point
+const float InitializingPoint_y = 584902;
+const float InitializingPoint_z =4691134; 
+
+

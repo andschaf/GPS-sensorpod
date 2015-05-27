@@ -1,0 +1,7 @@
+1. in the correct workspace: catkin build gps_rviz
+2. source bash file
+3. roscore
+4. rosrun gps_rviz gps_rviz
+5. rosrun rviz rviz (subscribe to /GPS_marker
+6. rosbag play "bagname"
+

@@ -1,0 +1,8 @@
+#! /bin/bash
+
+
+rosrun rviz rviz &
+
+rosrun gps_rviz gps_rviz &
+
+rosbag play 2015-05-20-15-15-50.bag &

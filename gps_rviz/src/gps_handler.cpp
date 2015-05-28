@@ -1,55 +1,56 @@
 #include "gps_handler.h"
 
-#include "math.h"
 #include "geometry_msgs/Vector3.h"
+#include "math.h"
 #include "visualization_msgs/Marker.h"
 #include "visualization_msgs/MarkerArray.h"
 
 namespace gps {
 
- geometry_msgs::Vector3 InitializingPoint, initializing_point_mission_frame;
+ geometry_msgs::Vector3 InitializingPoint, initializing_point_enu_global;
  bool is_reference_frame_initialized;
- float alpha_init, beta_init;
+ double lon_init, lat_init;
  
  visualization_msgs::MarkerArray gps_track;
  visualization_msgs::Marker gps_points, gps_line_strip, gps_line_list;
 
-// Rotational Matrix R_0G=R_01*R_1G; R_01=Rz(alpha); R_1G=Ry(beta)
-geometry_msgs::Vector3 transformation(geometry_msgs::Vector3 input, float alpha, float beta) {
-  geometry_msgs::Vector3 output;
-  output = input; // TODO(andschaf): for testing of the framework
-	// TODO(andschaf): build inverse!
-
-return output;
+// Transform Earth-Centered-Earth-Fixed coordinates to East-North-Up coordinates.
+void ecefToEnu(const geometry_msgs::Vector3& ecef, geometry_msgs::Vector3& enu) {
+  enu.x = -sin(lon_init) * ecef.x + cos(lon_init) * ecef.y;
+  enu.y = -cos(lon_init) * sin(lat_init) * ecef.x 
+          - sin(lon_init) * sin(lat_init) * ecef.y 
+          + cos(lat_init) * ecef.z;
+  enu.z = cos(lon_init) * cos(lat_init) * ecef.x 
+          + sin(lon_init) * cos(lat_init) * ecef.y 
+          + sin(lat_init) * ecef.z;  
 }
 
 // Rotational Matrix plus shifting
-void transformToMissionFrame(const geometry_msgs::Vector3& input_point, geometry_msgs::Vector3& transformed_point) {
+void transformToMissionFrame(const geometry_msgs::Vector3& input_point, geometry_msgs::Vector3& gps_enu_mission) {
   // Rotate by alpha and beta
-  transformed_point = transformation(input_point, alpha_init, beta_init); 
+  geometry_msgs::Vector3 gps_enu_global;
+  ecefToEnu(input_point, gps_enu_global); 
   // Shift by InitializingPoint in order to normalize
-  transformed_point.x = transformed_point.x - initializing_point_mission_frame.x; 
-  transformed_point.y = transformed_point.y - initializing_point_mission_frame.y;
-  transformed_point.z = transformed_point.z - initializing_point_mission_frame.z;
+  gps_enu_mission.x = gps_enu_global.x - initializing_point_enu_global.x; 
+  gps_enu_mission.y = gps_enu_global.y - initializing_point_enu_global.y;
+  gps_enu_mission.z = gps_enu_global.z - initializing_point_enu_global.z;
 } 
 
 // Transform spherical coordinates [degree] to cartesian [WGS84, meters] coordinates
-void gpsToCartesian(const geometry_msgs::Vector3& gps_spherical,
+void sphericalToCartesian(const geometry_msgs::Vector3& gps_spherical,
    geometry_msgs::Vector3& gps_cartesian) {
-  float height, phi_deg, phi_rad, lambda_deg, lambda_rad; 
-
-  height = gps_spherical.z; 	
-  phi_deg = gps_spherical.x; 	
-  lambda_deg = gps_spherical.y; 	
-  phi_rad = phi_deg / 180.0 * M_PI; 	
-  lambda_rad = lambda_deg / 180.0 * M_PI; 	
-  
+  double earth_radius, height, lat_rad, lon_rad; 
+   
+  // Convert from degree to radian
+  lat_rad = gps_spherical.x / 180.0 * M_PI; 	
+  lon_rad = gps_spherical.y / 180.0 * M_PI; 
+  height = gps_spherical.z;
+ 
   // Using WGS84 convention.
-  gps_cartesian.x = (kEarthRadius + height) * cos(phi_rad) * cos(lambda_rad);
-  gps_cartesian.y = (kEarthRadius + height) * cos(phi_rad) * sin(lambda_rad);
-  gps_cartesian.z = (kEarthRadius * (1.0 - kEccentricity * kEccentricity) + height) * sin(phi_rad);
-
-  ROS_INFO("In cartesian coordinates this is: [%f]||[%f]||[%f]", gps_cartesian.x, gps_cartesian.y,gps_cartesian.z);
+  earth_radius = kMajorAxis / sqrt(1.0 - kEccentricity * kEccentricity * sin(lat_rad) * sin(lat_rad));
+  gps_cartesian.x = (earth_radius + height) * cos(lat_rad) * cos(lon_rad);
+  gps_cartesian.y = (earth_radius + height) * cos(lat_rad) * sin(lon_rad);
+  gps_cartesian.z = (earth_radius * (1.0 - kEccentricity * kEccentricity) + height) * sin(lat_rad);
 }
 
 // ----------------------------------------------
@@ -68,11 +69,7 @@ void addToTrack(const geometry_msgs::Vector3& point_to_be_added_to_track) {
 
   gps_track.markers.push_back(gps_points);
   gps_track.markers.push_back(gps_line_strip);
-  gps_track.markers.push_back(gps_line_list);
-  ROS_INFO("Adding point [%f],[%f], [%f] in mission frame to Track.", 
-   point_to_be_added_to_track.x, 
-   point_to_be_added_to_track.y, 
-   point_to_be_added_to_track.z); 	
+  gps_track.markers.push_back(gps_line_list);	
 }
 
 // ------------------------------------------------------------

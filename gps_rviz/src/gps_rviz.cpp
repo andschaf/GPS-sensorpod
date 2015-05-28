@@ -15,51 +15,44 @@ void publishGPS_Track() {
 }
 
 void gpsCallback(const sensor_msgs::NavSatFix& gps_NavSatFix) {
-  geometry_msgs::Vector3 gps_spherical;
-  gps_spherical.x = gps_NavSatFix.latitude; // TODO(andschaf): this is sort of a hack...
-  gps_spherical.y = gps_NavSatFix.longitude; // x,y,z is misleading
-  gps_spherical.z = gps_NavSatFix.altitude;
+  geometry_msgs::Vector3 gps_spherical_degree;
+  gps_spherical_degree.x = gps_NavSatFix.latitude;
+  gps_spherical_degree.y = gps_NavSatFix.longitude;
+  gps_spherical_degree.z = gps_NavSatFix.altitude;
 
-  geometry_msgs::Vector3 gps_point_wgs84;
-  gps::gpsToCartesian(gps_spherical, gps_point_wgs84);	
+  ROS_INFO("Spherical coordinates degree: [%f],[%f],[%f]", 
+   gps_spherical_degree.x, gps_spherical_degree.y, gps_spherical_degree.z);
 
+  geometry_msgs::Vector3 gps_point_ecef;
+  gps::sphericalToCartesian(gps_spherical_degree, gps_point_ecef);	
+  
+  // Define Reference Frame if not done yet. 
   if (!gps::is_reference_frame_initialized){
    ROS_INFO("Initializing Reference Frame...");
-   gps::InitializingPoint = gps_point_wgs84;
-   gps::alpha_init = M_PI / 2.0 + gps_NavSatFix.longitude / 180.0 * M_PI;
-   gps::beta_init = M_PI / 2.0 - gps_NavSatFix.latitude / 180.0 * M_PI;
+   gps::InitializingPoint = gps_point_ecef;
+   gps::lon_init = gps_NavSatFix.longitude / 180.0 * M_PI;
+   gps::lat_init = gps_NavSatFix.latitude / 180.0 * M_PI;
    gps::is_reference_frame_initialized = true;
+
+   ROS_INFO("lon_init = [%f], lat_init = [%f]", gps::lon_init, gps::lat_init);
 	
-   gps::initializing_point_mission_frame = 
-   gps::transformation(gps::InitializingPoint, gps::alpha_init, gps::beta_init);
-   ROS_INFO("InitializingPoint in missionframe shoud be [0][0][R]!");
-   ROS_INFO("InitializingPoint in missionframe is [%f],[%f],[%f]", 
-    gps::initializing_point_mission_frame.x,  
-    gps::initializing_point_mission_frame.y,
-    gps::initializing_point_mission_frame.z);
-	 
+   gps::ecefToEnu(gps::InitializingPoint, gps::initializing_point_enu_global);	 
   } //if
 
   geometry_msgs::Vector3 GPS_point_missionframe;
-  gps::transformToMissionFrame(gps_point_wgs84, GPS_point_missionframe); 
+  gps::transformToMissionFrame(gps_point_ecef, GPS_point_missionframe); 
   gps::addToTrack(GPS_point_missionframe);	
   publishGPS_Track(); 
 } 
 
 int main(int argc, char **argv)
 {	
-  ROS_INFO("You are running playground!!!");
   ros::init(argc, argv, "nGPSlistener");
   ros::NodeHandle node_handle;
 	
   gps::initializeTrack();
 
   ros::Subscriber sub = node_handle.subscribe("/gps/fix" , 1000, gpsCallback);
-
   ros::spin();
   return 0;
 }
-
-
-// TODO(andschaf): real data set, validate, check with google maps
-

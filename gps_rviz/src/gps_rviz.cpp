@@ -28,11 +28,13 @@ void gps_callback(const sensor_msgs::NavSatFix gps_NavSatFix){ //callback functi
 	if (!gps::REFERENCE_FRAME_IS_INITIALIZED){
 	 ROS_INFO("Initializing Reference Frame...");
 	 gps::InitializingPoint = GPS_point_WGS84;
-	 gps::alpha_init = PI + gps_NavSatFix.longitude/180*PI;
+	 gps::alpha_init = PI/2 + gps_NavSatFix.longitude/180*PI;
 	 gps::beta_init = PI/2 - gps_NavSatFix.latitude/180*PI;
 	 gps::REFERENCE_FRAME_IS_INITIALIZED = true;
 	
 	 gps::InitializingPoint_missionframe = gps::transformation(gps::InitializingPoint, gps::alpha_init, gps::beta_init);
+	 ROS_INFO("InitializingPoint in missionframe shoud be [0][0][R]!");
+	 ROS_INFO("InitializingPoint in missionframe is [%f],[%f],[%f]", gps::InitializingPoint_missionframe.x,gps::InitializingPoint_missionframe.y,gps::InitializingPoint_missionframe.z);
 	 
 	} //endif
 

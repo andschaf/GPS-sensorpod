@@ -21,9 +21,8 @@ namespace gps{
 // Rotational Matrix R_0G=R_01*R_1G; R_01=Rz(a); R_1G=Ry(b)
 geometry_msgs::Vector3 transformation(geometry_msgs::Vector3 Input, float a, float b){
 	geometry_msgs::Vector3 Output;
- 	Output.x = cos(a)*cos(b)*Input.x - sin(a)*Input.y +cos(a)*sin(b)*Input.z;
- 	Output.y = sin(a)*cos(b)*Input.x + cos(a)*Input.y +sin(a)*sin(b)*Input.z;
- 	Output.z = -sin(b)*Input.x + cos(b)*Input.z;
+	Output = Input; // TODO for testing of the framework
+	// TODO build inverse!
 
 return Output;
 }
